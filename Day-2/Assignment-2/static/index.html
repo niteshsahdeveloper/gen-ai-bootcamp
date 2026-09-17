@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>AI User Story Generator</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f6f8;
+      }
+
+      .container {
+        width: 80%;
+        max-width: 1000px;
+        margin: 50px auto;
+      }
+
+      h1 {
+        text-align: center;
+        color: #222;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
+      }
+
+      .card {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 180px;
+        padding: 15px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 16px;
+        resize: vertical;
+      }
+
+      button {
+        margin-top: 15px;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 6px;
+        background: #2563eb;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #1d4ed8;
+      }
+
+      button:disabled {
+        background: #999;
+        cursor: not-allowed;
+      }
+
+      #loading {
+        display: none;
+        margin-top: 20px;
+        color: #555;
+      }
+
+      #result {
+        margin-top: 25px;
+        padding: 20px;
+        background: #f8fafc;
+        border-radius: 6px;
+        white-space: pre-wrap;
+        line-height: 1.6;
+      }
+
+      .error {
+        color: #dc2626;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>AI User Story Generator</h1>
+
+      <p class="subtitle">
+        Convert software requirements into Agile user stories and acceptance
+        criteria using an LLM.
+      </p>
+
+      <div class="card">
+        <label for="requirement">
+          <strong>Enter Software Requirement</strong>
+        </label>
+
+        <br /><br />
+
+        <textarea
+          id="requirement"
+          placeholder="Example:
+
+The application should allow customers to search for products, filter products by price and category, and add products to their shopping cart."
+        >
+        </textarea>
+
+        <button id="generateButton" onclick="generateStories()">
+          Generate User Stories
+        </button>
+
+        <div id="loading">Generating user stories using AI...</div>
+
+        <div id="result"></div>
+      </div>
+    </div>
+
+    <script>
+      async function generateStories() {
+        const requirement = document.getElementById("requirement").value.trim();
+
+        const result = document.getElementById("result");
+
+        const loading = document.getElementById("loading");
+
+        const button = document.getElementById("generateButton");
+
+        // Validate input
+
+        if (!requirement) {
+          result.innerHTML =
+            "<span class='error'>Please enter a software requirement.</span>";
+
+          return;
+        }
+
+        // Show loading
+
+        loading.style.display = "block";
+
+        button.disabled = true;
+
+        result.innerHTML = "";
+
+        try {
+          const response = await fetch("/generate", {
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify({
+              requirement: requirement,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            result.textContent = data.response;
+          } else {
+            result.innerHTML = "<span class='error'>" + data.error + "</span>";
+          }
+        } catch (error) {
+          result.innerHTML =
+            "<span class='error'>" +
+            "Unable to connect to the server: " +
+            error.message +
+            "</span>";
+        }
+
+        // Hide loading
+
+        loading.style.display = "none";
+
+        button.disabled = false;
+      }
+    </script>
+  </body>
+</html>
